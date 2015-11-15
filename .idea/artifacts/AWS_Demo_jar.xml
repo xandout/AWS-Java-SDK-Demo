@@ -1,0 +1,17 @@
+<component name="ArtifactManager">
+  <artifact build-on-make="true" name="AWS Demo:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/AWS_Demo_jar</output-path>
+    <root id="root">
+      <element id="archive" name="AWS Demo.jar">
+        <element id="module-output" name="AWS Demo" />
+      </element>
+      <element id="library" level="project" name="com.amazonaws:aws-java-sdk:1.10.34" />
+      <element id="library" level="project" name="commons-logging:commons-logging:1.2" />
+      <element id="library" level="project" name="com.google.code.gson:gson:2.4" />
+      <element id="library" level="project" name="com.sparkjava:spark-core:2.3" />
+      <element id="directory" name="html">
+        <element id="dir-copy" path="$PROJECT_DIR$/src/com/locallyremote/dev/html" />
+      </element>
+    </root>
+  </artifact>
+</component>

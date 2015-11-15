@@ -1,0 +1,183 @@
+<html>
+
+<head>
+    <title>Java AWS SDK Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Java AWS SDK Demo</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+
+        </div>
+    </div>
+</nav>
+
+<div class="jumbotron">
+    <div class="container">
+        <h1>Hello, world!</h1>
+        <p>This is a simple example of the AWS Java SDK, put in your auth details and play around.</p>
+
+        <form>
+            <div class="form-group">
+                <label for="accessId">Access ID</label>
+                <input type="text" class="form-control" id="accessId" placeholder="AKI.....A">
+            </div>
+            <div class="form-group">
+                <label for="accessKey">Access Key</label>
+                <input type="password" class="form-control" id="accessKey" placeholder="InUm....7MY">
+            </div>
+            <button class="btn btn-default" id="setCredsAction">Submit</button>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Get List of VPCs</h2>
+            <label for="region">Region</label>
+            <input type="text" class="form-control" id="region" placeholder="us-east-1">
+
+            <a class="btn btn-default" id="getVPCsAction" role="button">Get</a>
+            <ul class="list-group" id="vpcList">
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h2>Create VPC</h2>
+            <form>
+                <div class="form-group">
+                    <label for="region-create">Region</label>
+                    <input type="text" class="form-control" id="region-create" placeholder="us-east-1">
+                </div>
+                <div class="form-group">
+                    <label for="nameTag">Name</label>
+                    <input type="password" class="form-control" id="nameTag" placeholder="My New VPC">
+                </div>
+                <div class="form-group">
+                    <label for="subnet">Subnet</label>
+                    <input type="password" class="form-control" id="subnet" placeholder="192.168.1.0/24">
+                </div>
+                <button class="btn btn-default" id="createVPCAction">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <hr>
+
+    <footer>
+        <p>&copy; xandout 2015</p>
+    </footer>
+</div>
+
+<script type="text/javascript">
+        $(document).ready(function() {
+            $('#setCredsAction').click(function(e) {
+                e.preventDefault()
+                var accessId = $('#accessId').val();
+                var accessKey = $('#accessKey').val();
+
+                if (accessKey == '' || accessId == '') {
+                    alert('Set your credentials');
+                }
+
+                $.ajax({
+                    url: "/api/setCreds",
+                    data: {
+                        "accessId": accessId,
+                        "accessKey": accessKey
+                    },
+                    success: function(response) {
+                        //Do Something
+                        console.log(response);
+                    },
+                    error: function(xhr) {
+                        //Do Something to handle error
+                    }
+                });
+            });
+
+            $('#getVPCsAction').click(function(e) {
+                e.preventDefault()
+                $('#vpcList').empty()
+                var accessId = $('#accessId').val();
+                var accessKey = $('#accessKey').val();
+                var region = $('#region').val() || 'us-east-1';
+                // if(accessKey == '' || accessId == ''){
+                //     alert('Set your credentials');
+                // }
+
+                $.ajax({
+                    url: "/api/getVPCs",
+                    data: {
+                        "region": region
+                    },
+                    success: function(response) {
+                        //Do Something
+                        console.log(response);
+                        response = JSON.parse(response)
+                        if (response.length == 0) {
+                            $('#vpcList').append('<li class="list-group-item" id="novpcli">No VPCs</li>')
+                        }
+                        for (var v in response) {
+
+                            var vpc = response[v];
+                            $('#vpcList').append('<li class="list-group-item" id="' + vpc.vpcId + '-li"><span class="glyphicon glyphicon-remove remove-vpc" id="' + vpc.vpcId + '"/>' + vpc.vpcId + '</li>')
+                        }
+                    }
+                });
+            });
+            $('#vpcList').on("click", ".remove-vpc", function() {
+                var vpcId = this.id;
+                $.ajax({
+                    url: "/api/deleteVPC",
+                    data: {
+                        "vpcId": vpcId
+                    },
+                    success: function(response) {
+                        $('#' + vpcId + '-li').remove();
+                    }
+                });
+            });
+
+            $('#createVPCAction').click(function(e) {
+                e.preventDefault()
+                var region = $('#region-create').val() || 'us-east-1';
+                var nameTag = $('#nameTag').val() || "My New VPC";
+                var subnet = $('#subnet').val() || "192.168.1.0/24";
+                $.ajax({
+                    url: "/api/createVPC",
+                    data: {
+                        "region": region,
+                        "subnet": subnet,
+                        tags: "Name:" + nameTag
+                    },
+                    success: function(response) {
+                        $('#novpcli').remove();
+                        $('#vpcList').append('<li class="list-group-item" id="' + response + '-li"><span class="glyphicon glyphicon-remove remove-vpc" id="' + response + ' "/>' + response + '</li>')
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
